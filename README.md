@@ -24,3 +24,4 @@ The implementation currently uses a very basic hashing mechanism to create a sig
 - [ ] Bring your own HTTP request hasher
 - [ ] Cache Invalidation support
 - [ ] Improve test coverage
+- [ ] Add build/contribution guide to readme
