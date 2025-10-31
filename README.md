@@ -1,6 +1,7 @@
 # httpcache
 
 [![Go](https://github.com/cyberbeast/httpcache/actions/workflows/go.yml/badge.svg)](https://github.com/cyberbeast/httpcache/actions/workflows/go.yml)
+![coverage](https://raw.githubusercontent.com/cyberbeast/httpcache/badges/.badges/main/coverage.svg)
 
 An HTTP transport for Go standard library's HTTP Client that caches HTTP Responses in a local SQLite database to speed up subsequent requests.
 
