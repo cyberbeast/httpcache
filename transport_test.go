@@ -119,13 +119,3 @@ func measureDuration(fn func() error) (time.Duration, error) {
 
 	return latency(), nil
 }
-
-func TestHeaderHash(t *testing.T) {
-	headers := http.Header(map[string][]string{
-		"key":     {"v1"},
-		"value":   {"v2"},
-		"another": {"v3"},
-	})
-
-	hash(headers)
-}
