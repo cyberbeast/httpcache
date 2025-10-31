@@ -1,0 +1,22 @@
+# This workflow will build a golang project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
+
+name: Prevent merging `badges` branch
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  check_source_branch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ensure source branch is not badges
+        run: |
+          SOURCE_BRANCH="${{ github.head_ref }}"
+          RESTRICTED_BRANCH="badges"
+  
+          if [ "$SOURCE_BRANCH" == "$RESTRICTED_BRANCH" ]; then
+            echo "Error: Merging from '$RESTRICTED_BRANCH' into 'main' is not allowed."
+            exit 1
+          fi
