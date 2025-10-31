@@ -38,6 +38,42 @@ func TestTransport(t *testing.T) {
 	speedupIsAboveMinRatio(t, cold, cached, 0.75)
 }
 
+func TestTransportResetCache(t *testing.T) {
+	delay := 2 * time.Second
+	srv := httptest.NewServer(delayedResponse(delay))
+	defer srv.Close()
+
+	tr, err := NewTransport(t.Context(), SQLiteSource(path.Join(t.TempDir(), "temp.db")), nil)
+	if err != nil {
+		t.Fatalf("couldn't initialize transport for test: %v", err)
+	}
+
+	client := &http.Client{Transport: tr}
+
+	_, err = measureDuration(get(client, srv.URL))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = measureDuration(get(client, srv.URL))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err := tr.ResetCache(t.Context()); err != nil {
+		t.Fatalf("couldn't reset cache: %v", err)
+	}
+
+	cold, err := measureDuration(get(client, srv.URL))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if cold <= (delay) {
+		t.Fatalf("expected cold latency to be lower than or equal to %d, got %d\n", delay, cold)
+	}
+}
+
 func delayedResponse(delay time.Duration) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		time.Sleep(delay)

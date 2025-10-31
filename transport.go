@@ -19,6 +19,10 @@ type cachedTransport struct {
 	reqHashFn RequestHashFn
 }
 
+func (ct cachedTransport) ResetCache(ctx context.Context) error {
+	return ct.queries.DeleteAllResponses(ctx)
+}
+
 func (ct cachedTransport) cachedRoundTrip(req *http.Request) *http.Response {
 	res, err := ct.queries.GetResponse(req.Context(), ct.reqHashFn(req))
 	if err != nil {
