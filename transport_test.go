@@ -38,7 +38,7 @@ func TestTransport(t *testing.T) {
 	speedupIsAboveMinRatio(t, cold, cached, 0.75)
 }
 
-func TestTransportResetCache(t *testing.T) {
+func TestTransportInvalidateAllResponses(t *testing.T) {
 	delay := 2 * time.Second
 	srv := httptest.NewServer(delayedResponse(delay))
 	defer srv.Close()
@@ -60,8 +60,8 @@ func TestTransportResetCache(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err := tr.ResetCache(t.Context()); err != nil {
-		t.Fatalf("couldn't reset cache: %v", err)
+	if err := tr.InvalidateAllResponses(t.Context()); err != nil {
+		t.Fatalf("couldn't invalidate all responses in the cache: %v", err)
 	}
 
 	cold, err := measureDuration(get(client, srv.URL))

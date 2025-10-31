@@ -22,6 +22,7 @@ The implementation currently uses a very basic hashing mechanism to create a sig
 
 - [ ] Custom caching strategy based on HTTP response status codes
 - [ ] Bring your own HTTP request hasher
-- [ ] Cache Invalidation support
+- [x] Basic Cache Invalidation support
+- [ ] Configurable Cache Invalidation support
 - [ ] Improve test coverage
 - [ ] Add build/contribution guide to readme

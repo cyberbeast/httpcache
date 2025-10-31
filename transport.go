@@ -19,7 +19,7 @@ type cachedTransport struct {
 	reqHashFn RequestHashFn
 }
 
-func (ct cachedTransport) ResetCache(ctx context.Context) error {
+func (ct cachedTransport) InvalidateAllResponses(ctx context.Context) error {
 	return ct.queries.DeleteAllResponses(ctx)
 }
 
