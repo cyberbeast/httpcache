@@ -3,7 +3,6 @@ package httpcache
 import (
 	"bytes"
 	"context"
-	"database/sql"
 	"io"
 	"net/http"
 )
@@ -12,8 +11,8 @@ type cachedReadCloser struct {
 	ctx      context.Context
 	original io.ReadCloser
 	buffer   *bytes.Buffer
-	cache    *Queries
-	data     func() CacheResponseParams
+	cache    Querier
+	data     func() Params
 	tee      io.Reader
 }
 
@@ -27,19 +26,19 @@ func (b *cachedReadCloser) Close() error {
 	return b.original.Close()
 }
 
-func newCachedReadCloser(hash string, cache *Queries, resp *http.Response) (*cachedReadCloser) {
+func newCachedReadCloser(hash string, cache Querier, resp *http.Response) *cachedReadCloser {
 	buffer := &bytes.Buffer{}
 	return &cachedReadCloser{
 		ctx:      resp.Request.Context(),
 		original: resp.Body,
 		buffer:   buffer,
 		cache:    cache,
-		data: func() CacheResponseParams {
-			return CacheResponseParams{
+		data: func() Params {
+			return Params{
 				ReqHash:    hash,
-				Body:       sql.NullString{String: buffer.String(), Valid: true},
-				Headers:    sql.NullString{String: "", Valid: true},
-				StatusCode: sql.NullInt64{Int64: int64(resp.StatusCode), Valid: true},
+				Body:       buffer.String(),
+				Headers:    "",
+				StatusCode: resp.StatusCode,
 			}
 		},
 		tee: io.TeeReader(resp.Body, buffer),
