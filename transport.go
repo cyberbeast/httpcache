@@ -1,20 +1,53 @@
 package httpcache
 
 import (
+	"cmp"
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
-	"fmt"
 	"io"
 	"net/http"
-	"slices"
 	"strings"
 )
 
-type RequestHashFn func(req *http.Request) string
+type Cache interface {
+	Init(ctx context.Context) (Querier, error)
+}
+
+type Querier interface {
+	GetResponse(ctx context.Context, reqHash string) (Response, error)
+	CacheResponse(ctx context.Context, arg Params) (Response, error)
+	DeleteAllResponses(ctx context.Context) error
+}
+
+func NewTransport(ctx context.Context, cache Cache, rt http.RoundTripper) (*cachedTransport, error) {
+	store, err := cache.Init(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &cachedTransport{
+		rt:        cmp.Or(rt, http.DefaultTransport),
+		queries:   store,
+		reqHashFn: simpleRequestHash,
+	}, nil
+}
+
+type Params struct {
+	ReqHash    string
+	Body       string
+	Headers    string
+	StatusCode int
+}
+
+type Response struct {
+	ReqHash    string
+	Body       string
+	Headers    string
+	StatusCode int
+	UpdatedAt  string
+}
 
 type cachedTransport struct {
-	queries   *Queries
+	queries   Querier
 	rt        http.RoundTripper
 	reqHashFn RequestHashFn
 }
@@ -30,9 +63,9 @@ func (ct cachedTransport) cachedRoundTrip(req *http.Request) *http.Response {
 	}
 
 	return &http.Response{
-		Body:       io.NopCloser(strings.NewReader(res.Body.String)),
-		StatusCode: int(res.StatusCode.Int64),
-		Status:     http.StatusText(int(res.StatusCode.Int64)),
+		Body:       io.NopCloser(strings.NewReader(res.Body)),
+		StatusCode: res.StatusCode,
+		Status:     http.StatusText(res.StatusCode),
 		// Header:     res.Headers.String,
 	}
 }
@@ -49,44 +82,4 @@ func (ct cachedTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	res.Body = newCachedReadCloser(ct.reqHashFn(req), ct.queries, res)
 
 	return res, nil
-
-}
-
-func NewTransport(ctx context.Context, src SQLiteSource, rt http.RoundTripper) (*cachedTransport, error) {
-	db, err := initSQLiteDB(ctx, src)
-	if err != nil {
-		return nil, err
-	}
-
-	if rt == nil {
-		rt = http.DefaultTransport
-	}
-
-	return &cachedTransport{
-		rt:      rt,
-		queries: New(db),
-		reqHashFn: func(req *http.Request) string {
-			return fmt.Sprintf("%s:%s:%s", req.Method, req.URL.String(), hash(req.Header))
-		},
-	}, nil
-}
-
-const delimiter = "|"
-
-func hash(headers http.Header) string {
-	keys := make([]string, 0, len(headers))
-
-	for key := range headers {
-		keys = append(keys, key)
-	}
-
-	slices.Sort(keys)
-
-	var sb strings.Builder
-	for _, key := range keys {
-		sb.WriteString(fmt.Sprintf("%s:%s%s", key, headers.Get(key), delimiter))
-	}
-
-	hash := sha256.Sum256([]byte(sb.String()))
-	return hex.EncodeToString(hash[:])
 }

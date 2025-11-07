@@ -1,9 +1,9 @@
 version: '2'
 sql:
   - engine: sqlite
-    schema: schema.sql
-    queries: queries.sql
+    schema: ./internal/sqlite/schema.sql
+    queries: ./internal/sqlite/queries.sql
     gen:
       go:
-        package: httpcache
-        out: .
+        package: sqlite
+        out: ./internal/sqlite

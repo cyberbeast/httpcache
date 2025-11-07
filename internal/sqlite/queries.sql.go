@@ -3,7 +3,7 @@
 //   sqlc v1.30.0
 // source: queries.sql
 
-package httpcache
+package sqlite
 
 import (
 	"context"
