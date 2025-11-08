@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-type Cache interface {
+type Source interface {
 	Init(ctx context.Context) (Querier, error)
 }
 
@@ -18,8 +18,8 @@ type Querier interface {
 	DeleteAllResponses(ctx context.Context) error
 }
 
-func NewTransport(ctx context.Context, cache Cache, rt http.RoundTripper) (*cachedTransport, error) {
-	store, err := cache.Init(ctx)
+func NewTransport(ctx context.Context, src Source, rt http.RoundTripper) (*cachedTransport, error) {
+	store, err := src.Init(ctx)
 	if err != nil {
 		return nil, err
 	}

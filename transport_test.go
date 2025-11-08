@@ -1,12 +1,15 @@
 package httpcache
 
 import (
+	"database/sql"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"path"
 	"testing"
 	"time"
+
+	_ "modernc.org/sqlite"
 )
 
 func TestTransport(t *testing.T) {
@@ -14,7 +17,12 @@ func TestTransport(t *testing.T) {
 	srv := httptest.NewServer(delayedResponse(delay))
 	defer srv.Close()
 
-	tr, err := NewTransport(t.Context(), SQLiteSource(path.Join(t.TempDir(), "temp.db")), nil)
+	db, err := sql.Open("sqlite", path.Join("file://", t.TempDir(), "temp.db"))
+	if err != nil {
+		t.Fatalf("creating sqlite db: %v", err)
+	}
+
+	tr, err := NewTransport(t.Context(), SQLiteSource{db}, nil)
 	if err != nil {
 		t.Fatalf("couldn't initialize transport for test: %v", err)
 	}
@@ -43,7 +51,12 @@ func TestTransportInvalidateAllResponses(t *testing.T) {
 	srv := httptest.NewServer(delayedResponse(delay))
 	defer srv.Close()
 
-	tr, err := NewTransport(t.Context(), SQLiteSource(path.Join(t.TempDir(), "temp.db")), nil)
+	db, err := sql.Open("sqlite", path.Join("file://", t.TempDir(), "temp.db"))
+	if err != nil {
+		t.Fatalf("creating sqlite db: %v", err)
+	}
+
+	tr, err := NewTransport(t.Context(), SQLiteSource{db}, nil)
 	if err != nil {
 		t.Fatalf("couldn't initialize transport for test: %v", err)
 	}

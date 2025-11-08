@@ -4,10 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"strings"
 
 	"github.com/cyberbeast/httpcache/internal/sqlite"
-	_ "modernc.org/sqlite"
 )
 
 type sqliteStore struct{ queries *sqlite.Queries }
@@ -39,30 +37,12 @@ func wrapSQLiteResponse(res sqlite.Response, err error) (Response, error) {
 	}, err
 }
 
-const filePrefix = "file://"
-
-type SQLiteSource string
-
-func (s SQLiteSource) name() string { return "sqlite" }
-
-func (s SQLiteSource) filepath() string {
-	file := string(s)
-	if !strings.HasPrefix(file, filePrefix) {
-		file = filePrefix + file
-	}
-
-	return file
-}
+type SQLiteSource struct{ *sql.DB }
 
 func (s SQLiteSource) Init(ctx context.Context) (Querier, error) {
-	db, err := sql.Open(s.name(), s.filepath())
-	if err != nil {
-		return nil, fmt.Errorf("opening db: %w", err)
-	}
-
-	if _, err := db.ExecContext(ctx, sqlite.Schema); err != nil {
+	if _, err := s.ExecContext(ctx, sqlite.Schema); err != nil {
 		return nil, fmt.Errorf("creating db schema: %w", err)
 	}
 
-	return &sqliteStore{queries: sqlite.New(db)}, nil
+	return &sqliteStore{queries: sqlite.New(s)}, nil
 }
