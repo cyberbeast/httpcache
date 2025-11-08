@@ -7,3 +7,11 @@ sql:
       go:
         package: sqlite
         out: ./internal/sqlite
+  - engine: postgresql
+    schema: ./internal/postgres/schema.sql
+    queries: ./internal/postgres/queries.sql
+    gen:
+      go:
+        package: postgres
+        out: ./internal/postgres
+        sql_package: pgx/v5

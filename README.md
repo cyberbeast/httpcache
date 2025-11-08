@@ -23,10 +23,14 @@ The implementation currently uses a very basic hashing mechanism to create a sig
 
 ## Todo
 
+- [x] Basic Cache Invalidation support
+- [ ] Add `postgres` as an alternative source
+- [ ] Improve test coverage
+- [ ] Add `pgxpool` support for `postgres` source
 - [ ] Custom caching strategy based on HTTP response status codes
 - [ ] Explore parsing [Cache Control headers](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control) for request-level control
 - [ ] Bring your own HTTP request hasher
-- [x] Basic Cache Invalidation support
 - [ ] Configurable Cache Invalidation support
-- [ ] Improve test coverage
 - [ ] Add build/contribution guide to readme
+- [ ] Support returning HTTP headers in cached response
+- [ ] Improve documentation
