@@ -6,6 +6,8 @@ name: Go
 on:
   push:
     branches: [ "main" ]
+    tags:
+      - '*'
   pull_request:
     branches: [ "main" ]
 
@@ -29,4 +31,10 @@ jobs:
       with:
         config: ./.testcoverage.yml
         git-token: ${{ github.ref_name == 'main' && secrets.GITHUB_TOKEN || '' }}
-        git-branch: badges 
+        git-branch: badges
+    # see https://pkg.go.dev/about#adding-a-package
+    - name: Update pkg.go.dev
+      run: |
+         ESCAPED_MODULE=$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]')
+         curl https://proxy.golang.org/github.com/$ESCAPED_MODULE/@v/$GITHUB_REF_NAME.info
+
