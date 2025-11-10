@@ -3,11 +3,13 @@
 [![Go](https://github.com/cyberbeast/httpcache/actions/workflows/go.yml/badge.svg)](https://github.com/cyberbeast/httpcache/actions/workflows/go.yml)
 ![coverage](https://raw.githubusercontent.com/cyberbeast/httpcache/badges/.badges/main/coverage.svg)
 
-An HTTP transport for Go standard library's HTTP Client that caches HTTP Responses in a local SQLite database to speed up subsequent requests.
+An HTTP transport for Go standard library's HTTP Client that caches HTTP Responses in a database to speed up subsequent requests. Currently supported:
+1. `sqlite`
+2. `postgres` (coming soon)
 
 ## Motivation
 
-I was working on an internal tool at work that needed to run an expensive query over HTTP multiple times. Since the HTTP response didn't change between runs, I wrote `httpcache` to cap the maximum latency of making multiple HTTP requests to the latency of the initial cold request.
+I was working on an unrelated tool that ran expensive queries over HTTP multiple times. Since the HTTP response didn't change between runs, I wrote `httpcache` to cap the maximum latency of making multiple HTTP requests to the latency of the initial cold request.
 
 ## Implementation
 
