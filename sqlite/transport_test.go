@@ -1,4 +1,4 @@
-package httpcache
+package sqlite
 
 import (
 	"database/sql"
@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cyberbeast/httpcache"
 	_ "modernc.org/sqlite"
 )
 
@@ -22,7 +23,7 @@ func TestTransport(t *testing.T) {
 		t.Fatalf("creating sqlite db: %v", err)
 	}
 
-	tr, err := NewTransport(t.Context(), SQLiteSource{db}, nil)
+	tr, err := httpcache.NewTransport(t.Context(), DB{db}, nil)
 	if err != nil {
 		t.Fatalf("couldn't initialize transport for test: %v", err)
 	}
@@ -56,7 +57,7 @@ func TestTransportInvalidateAllResponses(t *testing.T) {
 		t.Fatalf("creating sqlite db: %v", err)
 	}
 
-	tr, err := NewTransport(t.Context(), SQLiteSource{db}, nil)
+	tr, err := httpcache.NewTransport(t.Context(), DB{db}, nil)
 	if err != nil {
 		t.Fatalf("couldn't initialize transport for test: %v", err)
 	}

@@ -8,25 +8,25 @@ import (
 	"strings"
 )
 
-type Source interface {
-	Init(ctx context.Context) (Querier, error)
+type CacheInitializer interface {
+	Init(ctx context.Context) (ResponseCacher, error)
 }
 
-type Querier interface {
+type ResponseCacher interface {
 	GetResponse(ctx context.Context, reqHash string) (Response, error)
 	CacheResponse(ctx context.Context, arg Params) (Response, error)
 	DeleteAllResponses(ctx context.Context) error
 }
 
-func NewTransport(ctx context.Context, src Source, rt http.RoundTripper) (*cachedTransport, error) {
-	store, err := src.Init(ctx)
+func NewTransport(ctx context.Context, cache CacheInitializer, rt http.RoundTripper) (*cachedTransport, error) {
+	queries, err := cache.Init(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	return &cachedTransport{
 		rt:        cmp.Or(rt, http.DefaultTransport),
-		queries:   store,
+		queries:   queries,
 		reqHashFn: simpleRequestHash,
 	}, nil
 }
@@ -47,7 +47,7 @@ type Response struct {
 }
 
 type cachedTransport struct {
-	queries   Querier
+	queries   ResponseCacher
 	rt        http.RoundTripper
 	reqHashFn RequestHashFn
 }

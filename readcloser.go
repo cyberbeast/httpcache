@@ -11,7 +11,7 @@ type cachedReadCloser struct {
 	ctx      context.Context
 	original io.ReadCloser
 	buffer   *bytes.Buffer
-	cache    Querier
+	cache    ResponseCacher
 	data     func() Params
 	tee      io.Reader
 }
@@ -26,7 +26,7 @@ func (b *cachedReadCloser) Close() error {
 	return b.original.Close()
 }
 
-func newCachedReadCloser(hash string, cache Querier, resp *http.Response) *cachedReadCloser {
+func newCachedReadCloser(hash string, cache ResponseCacher, resp *http.Response) *cachedReadCloser {
 	buffer := &bytes.Buffer{}
 	return &cachedReadCloser{
 		ctx:      resp.Request.Context(),
