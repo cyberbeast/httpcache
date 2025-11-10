@@ -1,16 +1,17 @@
-package httpcache
+package postgres
 
 import (
 	"context"
 
+	"github.com/cyberbeast/httpcache"
 	"github.com/cyberbeast/httpcache/internal/postgres"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type pgstore struct{ queries *postgres.Queries }
+type store struct{ queries *postgres.Queries }
 
-func (s *pgstore) CacheResponse(ctx context.Context, arg Params) (Response, error) {
+func (s *store) CacheResponse(ctx context.Context, arg httpcache.Params) (httpcache.Response, error) {
 	return wrapPostgresResponse(s.queries.CacheResponse(ctx, postgres.CacheResponseParams{
 		ReqHash:    arg.ReqHash,
 		Body:       pgtype.Text{String: arg.Body, Valid: true},
@@ -19,16 +20,16 @@ func (s *pgstore) CacheResponse(ctx context.Context, arg Params) (Response, erro
 	}))
 }
 
-func (s *pgstore) DeleteAllResponses(ctx context.Context) error {
+func (s *store) DeleteAllResponses(ctx context.Context) error {
 	return s.queries.DeleteAllResponses(ctx)
 }
 
-func (s *pgstore) GetResponse(ctx context.Context, reqHash string) (Response, error) {
+func (s *store) GetResponse(ctx context.Context, reqHash string) (httpcache.Response, error) {
 	return wrapPostgresResponse(s.queries.GetResponse(ctx, reqHash))
 }
 
-func wrapPostgresResponse(res postgres.Response, err error) (Response, error) {
-	return Response{
+func wrapPostgresResponse(res postgres.Response, err error) (httpcache.Response, error) {
+	return httpcache.Response{
 		ReqHash:    res.ReqHash,
 		Body:       res.Body.String,
 		Headers:    res.Headers.String,
@@ -37,12 +38,12 @@ func wrapPostgresResponse(res postgres.Response, err error) (Response, error) {
 	}, err
 }
 
-type PostgresSource struct{ *pgx.Conn }
+type Connection struct{ *pgx.Conn }
 
-func (p PostgresSource) Init(ctx context.Context) (Querier, error) {
-	if _, err := p.Exec(ctx, postgres.Schema); err != nil {
+func (c Connection) Init(ctx context.Context) (httpcache.ResponseCacher, error) {
+	if _, err := c.Exec(ctx, postgres.Schema); err != nil {
 		return nil, err
 	}
 
-	return &pgstore{queries: postgres.New(p)}, nil
+	return &store{queries: postgres.New(c.Conn)}, nil
 }
