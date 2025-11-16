@@ -9,10 +9,10 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type store struct{ queries *postgres.Queries }
+type cache struct{ queries *postgres.Queries }
 
-func (s *store) CacheResponse(ctx context.Context, arg httpcache.Params) (httpcache.Response, error) {
-	return wrapPostgresResponse(s.queries.CacheResponse(ctx, postgres.CacheResponseParams{
+func (c *cache) CacheResponse(ctx context.Context, arg httpcache.Params) (httpcache.Response, error) {
+	return wrapPostgresResponse(c.queries.CacheResponse(ctx, postgres.CacheResponseParams{
 		ReqHash:    arg.ReqHash,
 		Body:       pgtype.Text{String: arg.Body, Valid: true},
 		Headers:    pgtype.Text{String: arg.Headers, Valid: true},
@@ -20,12 +20,12 @@ func (s *store) CacheResponse(ctx context.Context, arg httpcache.Params) (httpca
 	}))
 }
 
-func (s *store) DeleteAllResponses(ctx context.Context) error {
-	return s.queries.DeleteAllResponses(ctx)
+func (c *cache) DeleteAllResponses(ctx context.Context) error {
+	return c.queries.DeleteAllResponses(ctx)
 }
 
-func (s *store) GetResponse(ctx context.Context, reqHash string) (httpcache.Response, error) {
-	return wrapPostgresResponse(s.queries.GetResponse(ctx, reqHash))
+func (c *cache) GetResponse(ctx context.Context, reqHash string) (httpcache.Response, error) {
+	return wrapPostgresResponse(c.queries.GetResponse(ctx, reqHash))
 }
 
 func wrapPostgresResponse(res postgres.Response, err error) (httpcache.Response, error) {
@@ -45,5 +45,5 @@ func (c Connection) Init(ctx context.Context) (httpcache.ResponseCacher, error) 
 		return nil, err
 	}
 
-	return &store{queries: postgres.New(c.Conn)}, nil
+	return &cache{queries: postgres.New(c.Conn)}, nil
 }
