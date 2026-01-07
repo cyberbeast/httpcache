@@ -33,7 +33,7 @@ func hash(headers http.Header) string {
 
 	var sb strings.Builder
 	for _, key := range keys {
-		sb.WriteString(fmt.Sprintf("%s:%s%s", key, headers.Get(key), delimiter))
+		fmt.Fprintf(&sb, "%s:%s%s", key, headers.Get(key), delimiter)
 	}
 
 	return sha256str([]byte(sb.String()))

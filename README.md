@@ -4,6 +4,7 @@
 ![coverage](https://raw.githubusercontent.com/cyberbeast/httpcache/badges/.badges/main/coverage.svg)
 
 An HTTP transport for Go standard library's HTTP Client that caches HTTP Responses in a database to speed up subsequent requests. Currently supported:
+
 1. `sqlite`
 2. `postgres` (coming soon)
 
@@ -26,7 +27,7 @@ The implementation currently uses a very basic hashing mechanism to create a sig
 ## Todo
 
 - [x] Basic Cache Invalidation support
-- [ ] Add `postgres` as an alternative source
+- [x] Add `postgres` as an alternative source
 - [ ] Improve test coverage
 - [ ] Add `pgxpool` support for `postgres` source
 - [ ] Custom caching strategy based on HTTP response status codes
